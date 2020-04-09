@@ -5,7 +5,10 @@
 from flask import Flask,render_template,request,redirect,url_for
 
 import pygal
-from datetime import datetime, timedelta
+
+import psycopg2
+
+
 
 #calling/instaciating
 
@@ -86,18 +89,34 @@ def edit_inventory():
     
 @app.route('/data_visualisation')
 def data_visualisation():
+
+    conn = psycopg2.connect(" dbname='inventory_management_system' user='postgres' host='localhost' port='5432' password='Goodmand254' ")
     
+    cur = conn.cursor()
+    cur.execute("""
+    SELECT type, count(type) 
+    FROM public.inventories
+    group by type;
+    """)
+
+    product_service = cur.fetchall()
+    print(product_service)
+
+
     pie_chart = pygal.Pie()
 
-    my_pie_data = [
+    '''my_pie_data = [
         ('Nairobi', 63),
         ('Mombasa', 20),
         ('Kilifi', 17),
         ('Machakos', 30),
-        ('Kiambu', 7)
-    ]
-    for each in my_pie_data:
+        ('Kiambu', 7)]'''
+
+    pie_chart.title='Ratio of product and service'
+    for each in product_service:
         pie_chart.add(each[0],each[1])
+
+   
     
     pie_data = pie_chart.render_data_uri()
 
@@ -107,13 +126,19 @@ def data_visualisation():
     #end of pie chart
 
     #start of line graph
-    
-    '''line_chart.title='Browser usage evolution (in %)'
-    line_chart.x_labels= map(str, range(2002, 2013))
-    line_chart.add('Firefox', [None, None,    0, 16.6,   25,   31, 36.4, 45.5, 46.3, 42.8, 37.1])
-    line_chart.add('Chrome',  [None, None, None, None, None, None,    0,  3.9, 10.8, 23.8, 35.3])
-    line_chart.add('IE',      [85.8, 84.6, 84.7, 74.5,   66, 58.6, 54.7, 44.8, 36.2, 26.6, 20.1])
-    line_chart.add('Others',  [14.2, 15.4, 15.3,  8.9,    9, 10.4,  8.9,  5.8,  6.7,  6.8,  7.5])'''
+
+
+
+    cur.execute("""
+    SELECT EXTRACT(MONTH FROM s.created_at) as sales_month, sum(quantity*selling_price) as total_sales
+    from sales as s
+    join inventories as i on s.invid = i.id
+	group by sales_month 
+	order by sales_month asc;
+    """)
+    monthly_sales=cur.fetchall()
+    print(monthly_sales)
+  
 
     data = [
         {'month': 'January', 'total': 22},
@@ -132,11 +157,10 @@ def data_visualisation():
 
     a=[]
     b=[]
-    for each in data:
-        x=each['month']
-        y=each['total']
-        a.append(x)
-        b.append(y)
+    for each in monthly_sales:
+   
+        a.append(each[0])
+        b.append(each[1])
 
     
     line_chart = pygal.Line()
