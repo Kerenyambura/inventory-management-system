@@ -8,15 +8,95 @@ import pygal
 
 import psycopg2
 
+from flask_sqlalchemy import SQLAlchemy
+
+from config.config import Development,Production
 
 
-#calling/instaciating
 
+''' 
+    We have two ways for connecting to the database in flask
+    1. psycopg2 - Here you write SQL statements
+    2. Flask-SQLAlchemy - Here you use ORM(Object Relational Mapper)
+
+    PSYCOPG2
+    Its a python library that helps write queries in flask
+    HOW TO USE IT
+    1. install it
+
+    2. set up a connection to your database 
+        - username
+        - password
+        - port
+        - root
+        - dbname
+
+    3. connect to using cursor
+    4. execute an SQL Statement
+    5. Fetch your records
+'''
+
+
+'''
+    FLASK-SQLALCHEMY
+    Library that helps us write classes object to communicate to our database without
+    writing sql statements
+
+    EXAMPLE 
+    INSERT INTO sales VALUES (inv_id=1, quantity=10, created=now())
+
+    create a class and it SalesModel
+    then create function that inserts records
+    then insert
+
+    class SalesModel():
+        def insert_sales(self):
+            db.session.add()
+        
+    query
+
+        def query_sales(self):
+            self.query.all()
+
+        select * from sales
+
+
+    STEPS TO USE FLASK-SQLALCHEMY
+    1. install it
+    2. use it
+        - create a connection to the db
+        - load configurations
+        - create an instance of FLASK-SQLALCHEMY by passing in the app
+
+
+'''
+
+# calling/ instanciating
 app = Flask(__name__)
 
-#creating endpoints/routes
-#1.declaration of a route
-#2.a function embeded to the route
+# Load configuration
+app.config.from_object(Development)
+
+# calling/ instanciating of SQLAlchemy
+# alway comes with functions and helpers to create our tables
+db = SQLAlchemy(app)
+
+# Creating of endpoints/ routes
+# 1. declaration of a route
+# 2. a function embedded to the route
+
+# creating tables
+from models.Inventory import InventoryModel
+from models.Sales import SalesModel
+from models.Stock import StocksModel
+
+
+@app.before_first_request
+def create_tables():
+    db.create_all()  
+
+
+
 
 @app.route('/home')
 def home():
@@ -43,17 +123,13 @@ def inventories():
         buying_price=request.form['buying_price']
         selling_price=request.form['selling_price']
         
+        new_inv=InventoryModel(name=name,inv_type=inv_type,buying_price=buying_price,selling_price=selling_price)
+        new_inv.add_inventories()
 
-        print(name)
-        print(inv_type)
-        print(buying_price)
-        print(selling_price)
-
-
-       
         return redirect( url_for ('inventories'))
 
 
+        
     return render_template("inventories.html")
 
 
@@ -61,6 +137,11 @@ def inventories():
 def add_stock():
     if request.method=='POST':
          stock = request.form['stock']
+         
+         quantity=['quantity']
+         
+         new_stock = StocksModel(quantity=quantity)
+
     print(stock)
     return redirect( url_for ('inventories'))
 
@@ -69,6 +150,7 @@ def add_stock():
 def add_sale():
     if request.method == 'POST':
         quantity = request.form['quantity']
+        new_sale=SalesModel(quantity=quantity)
     print(quantity)
     return redirect(url_for ('inventories'))
 
@@ -130,12 +212,13 @@ def data_visualisation():
 
 
     cur.execute("""
-    SELECT EXTRACT(MONTH FROM s.created_at) as sales_month, sum(quantity*selling_price) as total_sales
+    select to_char(to_timestamp (EXTRACT(MONTH FROM  s.created_at)::text, 'MM'), 'Mon') as Month,sum(quantity*selling_price) as total_sales
     from sales as s
     join inventories as i on s.invid = i.id
-	group by sales_month 
-	order by sales_month asc;
+	group by month
+	order by month;
     """)
+
     monthly_sales=cur.fetchall()
     print(monthly_sales)
   
