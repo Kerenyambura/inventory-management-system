@@ -101,20 +101,23 @@ Inventories
     </thead>
     <tbody>
       <tr>
-        <th scope="row">1</th>
-        <td>01</td>
-        <td>Bread</td>
-        <td>Product</td>
-        <td>3000</td>
-        <td>4500</td>
+        {%set counter = namespace(value=1) %}
+        {%for inv in inventories%}
+        <th scope="row">{{counter.value}}</th>
+        <td>{{inv.name}}</td>
+        <td>{{inv.type}}</td>
+        <td>{{inv.buying_price}}</td>
+        <td>{{inv.selling_price}}</td>
+        <td></td>
+
         <td>
           <!-- Button trigger modal -->
-          <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addStock">
+          <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addStock{{inv.id}}">
             Add Stock
           </button>
           <!-- Modal -->
-          <div class="modal fade" id="addStock" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-            aria-hidden="true">
+          <div class="modal fade" id="addStock{{ inv.id }}" tabindex="-1" role="dialog"
+            aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
               <div class="modal-content">
                 <div class="modal-header">
@@ -126,7 +129,7 @@ Inventories
                 <div class="modal-body">
 
 
-                  <form action="{{ url_for ('add_stock') }}" method="POST">
+                  <form action="{{ url_for ('add_stock' , invid=inv.id) }}" method="POST">
                     <div class="form-group">
 
                       <label for="exampleInputEmail1">Stock</label>
@@ -179,7 +182,8 @@ Inventories
 
                       <label for="exampleInputEmail1">Quantity</label>
 
-                      <input name="quantity" type="number" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+                      <input name="quantity" type="number" class="form-control" id="exampleInputEmail1"
+                        aria-describedby="emailHelp">
 
                       <small id="emailHelp" class="form-text text-muted">Number of sales</small>
 
@@ -197,7 +201,7 @@ Inventories
 
 
                 </div>
-                
+
               </div>
             </div>
           </div>
@@ -226,7 +230,8 @@ Inventories
 
                       <label for="exampleInputEmail1">Quantity</label>
 
-                      <input name="quantity" type="number" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+                      <input name="quantity" type="number" class="form-control" id="exampleInputEmail1"
+                        aria-describedby="emailHelp">
 
                       <small id="emailHelp" class="form-text text-muted">Number of sales</small>
 
@@ -242,7 +247,7 @@ Inventories
                   </form>
 
                 </div>
- 
+
               </div>
             </div>
           </div>
@@ -268,50 +273,51 @@ Inventories
                     <!-- name field -->
                     <div class="form-group">
                       <label for="exampleInputEmail1">Name</label>
-        
-                      <input name="name" type="name" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
-        
+
+                      <input name="name" type="name" class="form-control" id="exampleInputEmail1"
+                        aria-describedby="emailHelp">
+
                       <small id="emailHelp" class="form-text text-muted">Edit this
                         inventory</small>
                     </div>
-        
+
                     <!-- type field -->
-        
+
                     <div class="form-group">
                       <label for="exampleInputEmail1">Type</label>
-        
+
                       <select name="type" class="form-control" id="exampleFormControlSelect1">
                         <option></option>
                         <option>Product</option>
                         <option>Service</option>
                       </select>
                     </div>
-        
+
                     <!-- BP field -->
                     <div class="form-group">
-        
+
                       <label for="exampleInputEmail1">Buying Price</label>
-        
+
                       <input name="buying_price" type="float" class="form-control" id="exampleInputEmail1"
                         aria-describedby="emailHelp">
                     </div>
-        
+
                     <!-- SP field -->
                     <div class="form-group">
                       <label for="exampleInputEmail1">Selling Price</label>
-        
+
                       <input name="selling_price" type="float" class="form-control" id="exampleInputEmail1"
                         aria-describedby="emailHelp">
                     </div>
-        
+
                     <div class="modal-footer">
                       <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                       <button type="submit" class="btn btn-primary">Edit Inventory</button>
                     </div>
-        
+
                   </form>
                 </div>
-               
+
               </div>
             </div>
           </div>
@@ -348,8 +354,15 @@ Inventories
 
         </td>
       </tr>
+      {% set counter.value = counter.value+1 %}
+
+      {%endfor%}
+
     </tbody>
+
   </table>
-</div>
+
+
+
 
 {% endblock %}

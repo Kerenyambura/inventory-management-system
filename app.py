@@ -130,28 +130,34 @@ def inventories():
 
 
         
-    return render_template("inventories.html")
+    return render_template('inventories.html', inventories=inventories)
 
 
-@app.route('/add_stock', methods=['POST'])
-def add_stock():
+@app.route('/add_stock/<invid>', methods=['POST'])
+def add_stock(invid):
     if request.method=='POST':
          stock = request.form['stock']
-         
-         quantity=['quantity']
-         
-         new_stock = StocksModel(quantity=quantity)
+          
+         new_stock = StocksModel(invid=invid,  quantity=stock)
+         new_stock.add_stock()
 
-    print(stock)
+    
+
+    #print(quantity)
     return redirect( url_for ('inventories'))
 
 
-@app.route('/add_sale', methods=['POST'])
-def add_sale():
+@app.route('/add_sale/<invid>', methods=['POST'])
+def add_sale(invid):
     if request.method == 'POST':
-        quantity = request.form['quantity']
-        new_sale=SalesModel(quantity=quantity)
-    print(quantity)
+        sale = request.form['sale']
+        new_sale=SalesModel(invid=invid, quantity=sale)
+
+        new_sale.add_sales()
+
+
+
+    #print(quantity)
     return redirect(url_for ('inventories'))
 
 @app.route('/edit_inventory',methods=['POST'])
