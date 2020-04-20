@@ -108,7 +108,13 @@ Inventories
         <td>{{inv.type}}</td>
         <td>{{inv.buying_price}}</td>
         <td>{{inv.selling_price}}</td>
-        <td></td>
+        <td>
+          {% for each in remaining_stock %}
+          {% if each[0] == inv.id  %}
+          {{ each[1] }}
+          {% endif %}
+          {% endfor %}
+        </td>
 
         <td>
           <!-- Button trigger modal -->
@@ -143,7 +149,7 @@ Inventories
                     </div>
 
                     <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
                       <button type="submit" class="btn btn-primary">Add Stock</button>
                     </div>
 
@@ -159,13 +165,13 @@ Inventories
 
 
           <!-- Button trigger modal -->
-          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addSale">
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addSale{{ inv.id }}">
             Add Sale
           </button>
 
           <!-- Modal -->
-          <div class="modal fade" id="addSale" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-            aria-hidden="true">
+          <div class="modal fade" id="addSale{{  inv.id }}" tabindex="-1" role="dialog"
+            aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
               <div class="modal-content">
                 <div class="modal-header">
@@ -177,7 +183,7 @@ Inventories
                 <div class="modal-body">
 
 
-                  <form action="{{ url_for('add_sale') }}" method="POST">
+                  <form action="{{ url_for('add_sale',  invid=inv.id) }}" method="POST">
                     <div class="form-group">
 
                       <label for="exampleInputEmail1">Quantity</label>
@@ -192,25 +198,30 @@ Inventories
 
 
                     <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
                       <button type="submit" class="btn btn-primary">Add sale</button>
                     </div>
-
-
                   </form>
-
-
                 </div>
-
               </div>
             </div>
           </div>
-          <!-- Button trigger modal -->
+
+
+
+          <a href="{{ url_for('view_sales', invid = inv.id) }}">
+
+            <button type="button" class="btn btn-warning btn-sm">View Sales</button>
+
+          </a>
+
+
+          <!-- Button trigger modal 
           <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#viewSale">
-            View Sale
+            View Sales
           </button>
 
-          <!-- Modal -->
+           Modal 
           <div class="modal fade" id="viewSale" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
             aria-hidden="true">
             <div class="modal-dialog" role="document">
@@ -250,11 +261,17 @@ Inventories
 
               </div>
             </div>
-          </div>
+          </div> -->
+
+
+
+
           <!-- Button trigger modal -->
           <button type="button" class="btn btn-info" data-toggle="modal" data-target="#editInventory">
             Edit Inventory
           </button>
+
+
 
           <!-- Modal -->
           <div class="modal fade" id="editInventory" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
@@ -267,9 +284,11 @@ Inventories
                     <span aria-hidden="true">&times;</span>
                   </button>
                 </div>
-                <div class="modal-body">
-                  <form action="{{ url_for('inventories') }}" method="POST">
 
+
+
+                <div class="modal-body">
+                  <form action="{{ url_for('edit') }}" method="POST">
                     <!-- name field -->
                     <div class="form-group">
                       <label for="exampleInputEmail1">Name</label>
@@ -311,7 +330,7 @@ Inventories
                     </div>
 
                     <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
                       <button type="submit" class="btn btn-primary">Edit Inventory</button>
                     </div>
 
@@ -322,12 +341,14 @@ Inventories
             </div>
           </div>
 
+
+
           <!-- Button trigger modal -->
           <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteInventoryl">
             Delete Inventory
           </button>
 
-          <!-- Modal -->
+          <!-- Modal 
           <div class="modal fade" id="deleteInventory" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
             aria-hidden="true">
             <div class="modal-dialog" role="document">
@@ -347,7 +368,7 @@ Inventories
                 </div>
               </div>
             </div>
-          </div>
+          </div> -->
 
 
 
@@ -359,8 +380,20 @@ Inventories
       {%endfor%}
 
     </tbody>
+    <tfoot>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Buying Price</th>
+        <th>Selling Price</th>
+        <th>Stock</th>
+        <th>Action</th>
+      </tr>
+    </tfoot>
 
   </table>
+</div>
 
 
 

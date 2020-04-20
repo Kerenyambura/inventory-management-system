@@ -14,3 +14,12 @@ class InventoryModel(db.Model):
     def add_inventories(self):
         db.session.add(self)
         db.session.commit()
+
+     # classmethod
+    @classmethod
+    def fetch_all_inventories(cls):
+        return cls.query.all()
+    
+    @classmethod
+    def fetch_by_id(cls, id):
+        return cls.query.filter_by(id=id).first()

@@ -84,6 +84,8 @@ db = SQLAlchemy(app)
 # Creating of endpoints/ routes
 # 1. declaration of a route
 # 2. a function embedded to the route
+conn = psycopg2.connect(" dbname='inventory_management_system' user='postgres' host='localhost' port='5432' password='Goodmand254' ")
+cur = conn.cursor()
 
 # creating tables
 from models.Inventory import InventoryModel
@@ -94,8 +96,6 @@ from models.Stock import StocksModel
 @app.before_first_request
 def create_tables():
     db.create_all()  
-
-
 
 
 @app.route('/home')
@@ -116,6 +116,31 @@ def services():
 
 @app.route('/inventories', methods=['GET' , 'POST'])
 def inventories():
+    inventories= InventoryModel.fetch_all_inventories()
+    inventories=InventoryModel.query.all()
+    
+
+    cur.execute("""
+
+
+    SELECT invid, sum(quantity) as "remaining_stock"
+		FROM (SELECT st.invid, sum(stock) as "quantity"
+		FROM public.new_stocks as st
+		GROUP BY invid
+			
+			union all
+			 
+	SELECT sa.invid, - sum(quantity) as "quantity"
+		FROM public.new_sales as sa
+		GROUP BY invid) as stsa
+		GROUP BY invid
+		ORDER BY invid;
+
+    """)
+
+    rs = cur.fetchall()
+    
+    #receive from a form
 
     if request.method == 'POST':
         name=request.form['name']
@@ -130,7 +155,7 @@ def inventories():
 
 
         
-    return render_template('inventories.html', inventories=inventories)
+    return render_template('inventories.html', inventories=inventories, remaining_stock=rs)
 
 
 @app.route('/add_stock/<invid>', methods=['POST'])
@@ -138,8 +163,9 @@ def add_stock(invid):
     if request.method=='POST':
          stock = request.form['stock']
           
-         new_stock = StocksModel(invid=invid,  quantity=stock)
+         new_stock = StocksModel(invid=invid,  stock=stock)
          new_stock.add_stock()
+         #remstock=new_stock-new_sale
 
     
 
@@ -150,13 +176,10 @@ def add_stock(invid):
 @app.route('/add_sale/<invid>', methods=['POST'])
 def add_sale(invid):
     if request.method == 'POST':
-        sale = request.form['sale']
+        sale = request.form['quantity']
         new_sale=SalesModel(invid=invid, quantity=sale)
 
         new_sale.add_sales()
-
-
-
     #print(quantity)
     return redirect(url_for ('inventories'))
 
@@ -174,6 +197,25 @@ def edit_inventory():
         print(selling_price)
 
         return redirect( url_for ('inventories'))
+
+@app.route('/edit', methods=['GET', 'POST'])
+def edit():
+
+    # recieve from a form
+    
+    if request.method == 'POST':
+        name = request.form['name']
+        inv_type = request.form['type']
+        buying_price = request.form['buying_price']
+        selling_price = request.form['selling_price']
+
+        print(name)
+        print(inv_type)
+        print(buying_price)
+        print(selling_price)
+
+        return redirect(url_for('inventories'))
+ 
     
 @app.route('/data_visualisation')
 def data_visualisation():
@@ -263,6 +305,15 @@ def data_visualisation():
     line_data = line_chart.render_data_uri()
 
     return render_template('chart.html', pie=pie_data, line=line_data)
+
+@app.route('/view_sales/<invid>')
+def view_sales(invid):
+
+    sales = SalesModel.get_sales_by_id(invid)
+    inv_name = InventoryModel.fetch_by_id(invid)
+
+    return render_template('viewSales.html', sales=sales,inv_name=inv_name)
+
 
 
 

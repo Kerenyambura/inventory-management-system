@@ -15,6 +15,12 @@ class SalesModel(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    @classmethod
+
+    def get_sales_by_id(cls, invid):
+        
+        return cls.query.filter_by(invid=invid).all()
+
 '''
 in the child model:
         - we store the FK and describe it (tablename and which column)
